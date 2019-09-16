@@ -14,7 +14,7 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity {
 
     EditText empID,empNAME,empSALARY;
-    Button btnADD,btnVIEW;
+    Button btnADD,btnVIEW,btnDELETE,btnVIEWALL;
     SQLiteDatabase db;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
 
         btnADD=(Button)findViewById(R.id.btnADD);
         btnVIEW=(Button)findViewById(R.id.btnVIEW);
+        btnDELETE=(Button)findViewById(R.id.btnDELETE);
+        btnVIEWALL=(Button)findViewById(R.id.btnVIEWALL);
 
         db=openOrCreateDatabase("EmployeeDB", Context.MODE_PRIVATE, null);
         db.execSQL("CREATE TABLE IF NOT EXISTS employee(empid VARCHAR , name VARCHAR , salary VARCHAR);");
@@ -56,10 +58,13 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 Cursor cursor = db.rawQuery("SELECT * FROM employee WHERE empid='"+ empID.getText()+"'", null);
+                System.out.print("HERE");
                 if(cursor.moveToFirst())
                 {
                     empNAME.setText(cursor.getString(1));
                     empSALARY.setText(cursor.getString(2));
+                    System.out.print("HERE");
+                    return;
                 }
                 else
                 {
@@ -68,6 +73,54 @@ public class MainActivity extends AppCompatActivity {
                     empNAME.setText("");
                     empSALARY.setText("");
                 }
+                System.out.print("HERE");
+            }
+        });
+
+        btnDELETE.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(empID.getText().toString().trim().length()==0)
+                {
+                    Toast.makeText(getApplicationContext(), "Enter emp ID to delete", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Cursor cursor=db.rawQuery("SELECT * FROM employee WHERE empid='"+empID.getText()+"'", null);
+                if(cursor.moveToFirst())
+                {
+                    db.execSQL("DELETE FROM employee WHERE empid='"+ empID.getText()+"'");
+                    Toast.makeText(getApplicationContext(), "Employee Removed", Toast.LENGTH_SHORT).show();
+                    empID.setText("");
+                    return;
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "Invalid empID", Toast.LENGTH_SHORT).show();
+                }
+                empID.setText("");
+
+
+            }
+        });
+
+        btnVIEWALL.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Cursor cursor=db.rawQuery("SELECT * FROM employee", null);
+                if(cursor.getCount()==0)
+                {
+                    Toast.makeText(getApplicationContext(), "No records Found", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                StringBuffer buffer=new StringBuffer();
+                while(cursor.moveToNext())
+                {
+                    buffer.append("Employee id: "+cursor.getString(0)+"\n");
+                    buffer.append("Name: "+cursor.getString(1)+"\n");
+                    buffer.append("salary: "+cursor.getString(2)+"\n\n");
+                }
+                Toast.makeText(getApplicationContext(), "Details are"+buffer.toString(), Toast.LENGTH_SHORT).show();
+
 
             }
         });
