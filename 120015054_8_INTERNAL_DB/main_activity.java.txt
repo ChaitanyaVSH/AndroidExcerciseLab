@@ -1,0 +1,75 @@
+package com.example.internaldb;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+public class MainActivity extends AppCompatActivity {
+
+    EditText empID,empNAME,empSALARY;
+    Button btnADD,btnVIEW;
+    SQLiteDatabase db;
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        empID=(EditText)findViewById(R.id.editID);
+        empNAME=(EditText)findViewById(R.id.editNAME);
+        empSALARY=(EditText)findViewById(R.id.editSALARY);
+
+        btnADD=(Button)findViewById(R.id.btnADD);
+        btnVIEW=(Button)findViewById(R.id.btnVIEW);
+
+        db=openOrCreateDatabase("EmployeeDB", Context.MODE_PRIVATE, null);
+        db.execSQL("CREATE TABLE IF NOT EXISTS employee(empid VARCHAR , name VARCHAR , salary VARCHAR);");
+
+        btnADD.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(empID.getText().toString().trim().length()==0||empNAME.getText().toString().trim().length()==0||empSALARY.getText().toString().trim().length()==0)
+                {
+                    Toast.makeText(getApplicationContext(), "Enter all values", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                db.execSQL("INSERT INTO employee VALUES('"+ empID.getText()+"','"+empNAME.getText()+ "','"+empSALARY.getText()+"');");
+                Toast.makeText(getApplicationContext(), "Successfully Record Added", Toast.LENGTH_SHORT).show();
+                empID.setText("");
+                empNAME.setText("");
+                empSALARY.setText("");
+            }
+        });
+
+        btnVIEW.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(empID.getText().toString().trim().length()==0)
+                {
+                    Toast.makeText(getApplicationContext(), "Enter empID", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Cursor cursor = db.rawQuery("SELECT * FROM employee WHERE empid='"+ empID.getText()+"'", null);
+                if(cursor.moveToFirst())
+                {
+                    empNAME.setText(cursor.getString(1));
+                    empSALARY.setText(cursor.getString(2));
+                }
+                else
+                {
+                   Toast.makeText(getApplicationContext(), "Invalid Employee", Toast.LENGTH_SHORT).show();
+                    empID.setText("");
+                    empNAME.setText("");
+                    empSALARY.setText("");
+                }
+
+            }
+        });
+    }
+}
